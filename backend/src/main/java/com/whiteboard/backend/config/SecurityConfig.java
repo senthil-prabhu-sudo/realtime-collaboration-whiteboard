@@ -3,7 +3,7 @@ package com.whiteboard.backend.config;
 import com.whiteboard.backend.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -42,49 +41,69 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // Disable CSRF (API + JWT)
                 .csrf(csrf -> csrf.disable())
+
+                // Stateless API
                 .sessionManagement(sm ->
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll() // Allow fetching sessions without auth
 
-                        // Protected REST APIs
-                        .requestMatchers("/sessions/**").authenticated() // Other session operations require auth
-                        .requestMatchers("/strokes/**").permitAll() // Allow all stroke operations for anonymous drawing
-                        .requestMatchers("/chat/**").permitAll() // Allow anonymous chat
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ ALLOW PREFLIGHT
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // ✅ AUTH ENDPOINTS
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+
+                        // ✅ WEBSOCKET
+                        .requestMatchers("/ws/**").permitAll()
+
+                        // ✅ PUBLIC READS
+                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
+                        .requestMatchers("/strokes/**").permitAll()
+                        .requestMatchers("/chat/**").permitAll()
+
+                        // 🔒 PROTECTED
+                        .requestMatchers("/sessions/**").authenticated()
                         .requestMatchers("/presence/**").authenticated()
                         .requestMatchers("/users/**").authenticated()
 
-                        // Block everything else
+                        // ❌ Everything else blocked
                         .anyRequest().denyAll()
                 )
+
+                // JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     /* ---------------------------------------------
-       CORS configuration
+       CORS configuration (Railway + Vercel safe)
     --------------------------------------------- */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // IMPORTANT: allow all origins via pattern
+        config.setAllowedOriginPatterns(List.of("*"));
+
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
-
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }
