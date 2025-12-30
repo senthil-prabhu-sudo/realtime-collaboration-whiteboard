@@ -1,5 +1,5 @@
 # =========================
-# BUILD STAGE
+# BUILD STAGE (Java 21)
 # =========================
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
@@ -12,9 +12,8 @@ RUN mvn clean package -DskipTests
 
 
 # =========================
-# RUNTIME STAGE
+# RUNTIME STAGE (Java 21)
 # =========================
-...
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
