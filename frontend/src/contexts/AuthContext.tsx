@@ -17,8 +17,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-// Dynamic API URL based on current protocol
-const API_URL = window.location.protocol === 'https:' ? 'https://localhost:8080' : 'http://localhost:8080';
+// API URL
+const API_URL = 'https://realtime-collaboration-whiteboard-production.up.railway.app';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);

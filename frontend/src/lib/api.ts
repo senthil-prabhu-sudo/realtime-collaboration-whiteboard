@@ -6,8 +6,8 @@
    - HARDENED Authorization handling (FINAL)
 ================================================== */
 
-// Dynamic API URL based on current protocol
-const API_URL = window.location.protocol === 'https:' ? 'https://localhost:8080' : 'http://localhost:8080';
+// API URL
+const API_URL = 'https://realtime-collaboration-whiteboard-production.up.railway.app';
 
 /* ---------------------------------------------
    Token provider (set by AuthContext)

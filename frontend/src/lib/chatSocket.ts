@@ -37,7 +37,7 @@ export function connectChatSocket(
   cleanup(); // 🔥 ensure clean state
 
   stompClient = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('https://realtime-collaboration-whiteboard-production.up.railway.app/ws'),
 
     connectHeaders: {
       Authorization: `Bearer ${token}`,

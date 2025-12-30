@@ -58,7 +58,7 @@ export function connectStrokeSocket(
   stompClient = new Client({
     webSocketFactory: () => {
       console.log('[Stroke WS] Creating new SockJS connection');
-      return new SockJS('http://localhost:8080/ws');
+      return new SockJS('https://realtime-collaboration-whiteboard-production.up.railway.app/ws');
     },
     
     connectHeaders: {
