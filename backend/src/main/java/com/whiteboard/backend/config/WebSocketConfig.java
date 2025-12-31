@@ -28,7 +28,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns(
                         "http://localhost:5173",
-                        "http://127.0.0.1:5173"
+                        "http://127.0.0.1:5173",
+                        "https://realtime-collaboration-whiteboard-f.vercel.app",
+                        "https://realtime-collaboration-whiteboard-production.up.railway.app"
                 )
                 .withSockJS();
     }
