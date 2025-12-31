@@ -37,10 +37,11 @@ export function connectChatSocket(
   cleanup(); // 🔥 ensure clean state
 
   stompClient = new Client({
-    webSocketFactory: () => new SockJS('https://realtime-collaboration-whiteboard-production.up.railway.app/ws'),
+    webSocketFactory: () => new SockJS(`https://realtime-collaboration-whiteboard-production.up.railway.app/ws?token=${encodeURIComponent(token)}`),
 
     connectHeaders: {
-      Authorization: `Bearer ${token}`,
+      // Authorization header may not be needed if token is in query param
+      // Authorization: `Bearer ${token}`,
     },
 
     debug: str => console.log('[Chat STOMP]', str),
