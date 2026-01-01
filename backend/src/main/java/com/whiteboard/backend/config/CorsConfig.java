@@ -12,6 +12,7 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "https://realtime-collaboration-whiteboard-f.vercel.app",
+                        "https://realtime-collaboration-whiteboard.vercel.app",
                         "http://localhost:3000",
                         "https://realtime-collaboration-whiteboard-production.up.railway.app"
                 )
