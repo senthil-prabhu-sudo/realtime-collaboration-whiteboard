@@ -18,7 +18,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/strokes")
-@CrossOrigin(origins = "http://localhost:5173")
 public class StrokeController {
 
     private final StrokeRepository strokeRepo;

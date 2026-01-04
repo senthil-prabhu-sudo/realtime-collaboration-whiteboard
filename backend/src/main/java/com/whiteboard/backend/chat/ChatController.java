@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/chat")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ChatController {
 
     private final ChatRepository repo;

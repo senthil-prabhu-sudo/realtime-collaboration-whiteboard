@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/presence")
-@CrossOrigin(origins = "http://localhost:5173")
 public class PresenceController {
 
     private final PresenceRepository repo;

@@ -15,10 +15,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/sessions")
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowCredentials = "true"
-)
 public class SessionController {
 
     private final SessionRepository sessionRepo;

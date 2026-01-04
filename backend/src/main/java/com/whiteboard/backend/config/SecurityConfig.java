@@ -92,8 +92,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // IMPORTANT: allow all origins via pattern
-        config.setAllowedOriginPatterns(List.of("*"));
+        // Allow all origins for SockJS and production domains
+        config.setAllowedOriginPatterns(List.of(
+                "*",
+                "https://realtime-collaboration-whiteboard*.vercel.app",
+                "https://realtime-collaboration-whiteboard.vercel.app",
+                "https://realtime-collaboration-whiteboard-production.up.railway.app",
+                "https://*.vercel.app"
+        ));
 
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
