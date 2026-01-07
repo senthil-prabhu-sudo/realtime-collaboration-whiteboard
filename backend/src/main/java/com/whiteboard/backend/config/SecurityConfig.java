@@ -66,6 +66,9 @@ public class SecurityConfig {
                         
                         // 🔒 USER ENDPOINTS (require authentication)
                         .requestMatchers("/users/**").authenticated()
+                        
+                        // ✅ DEBUG ENDPOINTS (public access)
+                        .requestMatchers("/debug/**").permitAll()
 
                         // ✅ Allow everything else (for debugging)
                         .anyRequest().permitAll()

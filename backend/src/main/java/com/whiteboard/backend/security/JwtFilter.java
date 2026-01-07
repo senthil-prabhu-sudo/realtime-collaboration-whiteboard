@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +21,7 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
     private final JwtUtil jwtUtil;
 
     public JwtFilter(JwtUtil jwtUtil) {
@@ -31,15 +34,20 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
+        String method = request.getMethod();
 
-        return path.startsWith("/auth/")
+        boolean skip = path.startsWith("/auth/")
                 || path.startsWith("/ws/")
                 || path.startsWith("/sessions/")
                 || path.startsWith("/strokes/")
                 || path.startsWith("/chat/")
                 || path.startsWith("/presence/")
+                || path.startsWith("/debug/")
                 || path.startsWith("/error")
                 || path.startsWith("/actuator/");
+
+        logger.debug("JwtFilter.shouldNotFilter: {} {} -> {}", method, path, skip);
+        return skip;
     }
 
     @Override
@@ -49,8 +57,14 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        logger.info("JwtFilter processing: {} {}", method, path);
+
         // Allow CORS preflight
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            logger.debug("OPTIONS request, allowing through");
             filterChain.doFilter(request, response);
             return;
         }
@@ -59,11 +73,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // If no Authorization header, continue without authentication
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.debug("No Bearer token found, continuing without authentication");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
+        logger.debug("Found Bearer token: {}...", token.substring(0, Math.min(20, token.length())));
 
         try {
             /* ---------------------------------------------
@@ -72,8 +88,9 @@ public class JwtFilter extends OncePerRequestFilter {
             JwtUtil.JwtUser jwtUser = jwtUtil.validateAndExtract(token);
 
             // If token is invalid, just continue without authentication
-            // rather than throwing an exception
             if (jwtUser != null) {
+                logger.info("JWT valid for user: {}", jwtUser.userId());
+                
                 /* ---------------------------------------------
                    Set authorities
                 --------------------------------------------- */
@@ -96,16 +113,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
+                
+                logger.debug("Authentication set in SecurityContext");
+            } else {
+                logger.warn("JWT validation returned null for token");
             }
 
         } catch (Exception ex) {
             // Log the error but don't throw exception
-            // This allows public endpoints to work even with invalid tokens
-            System.err.println("JWT validation error (non-fatal): " + ex.getMessage());
+            logger.warn("JWT validation error (non-fatal) for {} {}: {}", 
+                    method, path, ex.getMessage());
             SecurityContextHolder.clearContext();
         }
 
         // Always continue the filter chain
+        logger.debug("Continuing filter chain");
         filterChain.doFilter(request, response);
     }
 }
