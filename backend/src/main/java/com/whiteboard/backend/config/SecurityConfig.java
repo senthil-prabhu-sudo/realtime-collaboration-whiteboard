@@ -46,13 +46,46 @@ public class SecurityConfig {
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // TEMPORARY: ALLOW ALL REQUESTS TO GET APP RUNNING
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
+                        // ✅ ALLOW PREFLIGHT
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // TEMPORARY: DISABLE JWT FILTER
-                // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                        // ✅ AUTH ENDPOINTS
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+
+                        // ✅ WEBSOCKET
+                        .requestMatchers("/ws/**").permitAll()
+
+                        // ✅ PUBLIC SESSION ENDPOINTS (viewing and listing)
+                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/test").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/sessions").permitAll()
+
+                        // ✅ PUBLIC WHITEBOARD CONTENT (anonymous drawing allowed)
+                        .requestMatchers("/strokes/**").permitAll()
+                        .requestMatchers("/chat/**").permitAll()
+
+                        // 🔒 SESSION MODIFICATION (requires authentication for owned sessions)
+                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").permitAll() // Controller handles auth logic
+                        .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").permitAll() // Controller handles auth logic
+
+                        // 🔒 AUTHENTICATED ENDPOINTS
+                        .requestMatchers("/presence/**").authenticated() // Presence tracking requires authentication
+                        .requestMatchers("/users/**").authenticated()
+
+                        // ✅ DEBUG ENDPOINTS (public access)
+                        .requestMatchers("/debug/**").permitAll()
+
+                        // ❌ Everything else blocked
+                        .anyRequest().denyAll()
+                )
+
+                // JWT filter
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
