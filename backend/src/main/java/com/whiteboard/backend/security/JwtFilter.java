@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,6 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/sessions/")
                 || path.startsWith("/strokes/")
                 || path.startsWith("/chat/")
+                || path.startsWith("/presence/")
                 || path.startsWith("/error")
                 || path.startsWith("/actuator/");
     }
@@ -57,21 +57,25 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        // If no Authorization header, continue without authentication
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            try {
+        String token = authHeader.substring(7);
+
+        try {
+            /* ---------------------------------------------
+               Validate JWT
+            --------------------------------------------- */
+            JwtUtil.JwtUser jwtUser = jwtUtil.validateAndExtract(token);
+
+            // If token is invalid, just continue without authentication
+            // rather than throwing an exception
+            if (jwtUser != null) {
                 /* ---------------------------------------------
-                   Validate JWT
-                --------------------------------------------- */
-                JwtUtil.JwtUser jwtUser = jwtUtil.validateAndExtract(token);
-
-                if (jwtUser == null) {
-                    throw new BadCredentialsException("JWT validation failed");
-                }
-
-                /* ---------------------------------------------
-                   Authorities
+                   Set authorities
                 --------------------------------------------- */
                 List<SimpleGrantedAuthority> authorities =
                         jwtUser.isAdmin()
@@ -92,13 +96,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
-
-            } catch (Exception ex) {
-                SecurityContextHolder.clearContext();
-                throw new BadCredentialsException("Invalid or expired JWT", ex);
             }
+
+        } catch (Exception ex) {
+            // Log the error but don't throw exception
+            // This allows public endpoints to work even with invalid tokens
+            System.err.println("JWT validation error (non-fatal): " + ex.getMessage());
+            SecurityContextHolder.clearContext();
         }
 
+        // Always continue the filter chain
         filterChain.doFilter(request, response);
     }
 }

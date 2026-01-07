@@ -27,17 +27,11 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    /* ---------------------------------------------
-       Password encoder
-    --------------------------------------------- */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /* ---------------------------------------------
-       Security filter chain
-    --------------------------------------------- */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -53,41 +47,28 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ ALLOW PREFLIGHT
+                        // ✅ ALLOW PREFLIGHT (must be first)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // ✅ AUTH ENDPOINTS
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers("/auth/**").permitAll()
 
                         // ✅ WEBSOCKET
                         .requestMatchers("/ws/**").permitAll()
 
-                        // ✅ PUBLIC SESSION ENDPOINTS (viewing and listing)
-                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sessions/test").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sessions/health").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sessions/{id}").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/sessions").permitAll()
+                        // ✅ SESSION ENDPOINTS (ALL PUBLIC for now)
+                        .requestMatchers("/sessions/**").permitAll()
                         
-                        // ✅ PUBLIC WHITEBOARD CONTENT (anonymous drawing allowed)
+                        // ✅ WHITEBOARD CONTENT (anonymous drawing allowed)
                         .requestMatchers("/strokes/**").permitAll()
                         .requestMatchers("/chat/**").permitAll()
-
-                        // 🔒 SESSION MODIFICATION (requires authentication for owned sessions)
-                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").permitAll() // Controller handles auth logic
-                        .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").permitAll() // Controller handles auth logic
+                        .requestMatchers("/presence/**").permitAll()
                         
-                        // 🔒 OTHER AUTHENTICATED ENDPOINTS
-                        .requestMatchers("/presence/**").permitAll() // Allow anonymous presence
+                        // 🔒 USER ENDPOINTS (require authentication)
                         .requestMatchers("/users/**").authenticated()
-                        
-                        // ✅ TEMPORARY DEBUG: Allow all for testing
-                        .requestMatchers("/**").permitAll()
 
-                        // ❌ Everything else blocked
-                        .anyRequest().denyAll()
+                        // ✅ Allow everything else (for debugging)
+                        .anyRequest().permitAll()
                 )
 
                 // JWT filter
@@ -96,29 +77,28 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /* ---------------------------------------------
-       CORS configuration (Railway + Vercel safe)
-    --------------------------------------------- */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Allow specific origins - patterns don't work reliably with credentials
         config.setAllowedOrigins(List.of(
                 "https://realtime-collaboration-whiteboard.vercel.app",
                 "https://realtime-collaboration-whiteboard-production.up.railway.app",
-                "http://localhost:5173",  // Vite dev server
-                "http://localhost:3000"   // Alternative dev port
+                "http://localhost:5173",
+                "http://localhost:3000"
         ));
 
         config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
+        
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        
+        // Important: Set max age for preflight cache
+        config.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
         return source;
