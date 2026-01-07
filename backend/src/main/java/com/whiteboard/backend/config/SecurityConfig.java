@@ -64,16 +64,15 @@ public class SecurityConfig {
                         // ✅ WEBSOCKET
                         .requestMatchers("/ws/**").permitAll()
 
-                        // ✅ PUBLIC READS
-                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
+                        // ✅ PUBLIC ENDPOINTS (most specific first)
                         .requestMatchers(HttpMethod.GET, "/sessions/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/sessions").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
                         .requestMatchers("/strokes/**").permitAll()
                         .requestMatchers("/chat/**").permitAll()
 
-                        // 🔒 PROTECTED
-                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/sessions/**").authenticated()
+                        // 🔒 AUTHENTICATED ENDPOINTS
+                        .requestMatchers("/sessions/**").authenticated()
                         .requestMatchers("/presence/**").authenticated()
                         .requestMatchers("/users/**").authenticated()
 
