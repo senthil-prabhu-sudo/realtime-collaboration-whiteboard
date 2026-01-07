@@ -90,13 +90,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Allow all origins for SockJS and production domains
-        config.setAllowedOriginPatterns(List.of(
-                "*",
-                "https://realtime-collaboration-whiteboard*.vercel.app",
+        // Allow specific origins - patterns don't work reliably with credentials
+        config.setAllowedOrigins(List.of(
                 "https://realtime-collaboration-whiteboard.vercel.app",
                 "https://realtime-collaboration-whiteboard-production.up.railway.app",
-                "https://*.vercel.app"
+                "http://localhost:5173",  // Vite dev server
+                "http://localhost:3000"   // Alternative dev port
         ));
 
         config.setAllowedMethods(List.of(
