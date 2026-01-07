@@ -154,4 +154,12 @@ public class SessionController {
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Backend is working!");
     }
+
+    /* ---------------------------------------------
+       HEALTH CHECK ENDPOINT (Railway)
+    --------------------------------------------- */
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("OK");
+    }
 }
