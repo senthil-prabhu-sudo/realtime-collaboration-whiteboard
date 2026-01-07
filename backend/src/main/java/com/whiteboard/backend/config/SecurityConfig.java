@@ -66,6 +66,7 @@ public class SecurityConfig {
 
                         // ✅ PUBLIC READS
                         .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/sessions").permitAll()
                         .requestMatchers("/strokes/**").permitAll()
                         .requestMatchers("/chat/**").permitAll()
