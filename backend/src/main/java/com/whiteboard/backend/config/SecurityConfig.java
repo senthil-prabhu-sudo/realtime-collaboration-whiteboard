@@ -38,7 +38,7 @@ public class SecurityConfig {
                 // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // Disable CSRF (API + JWT)
+                // Disable CSRF
                 .csrf(csrf -> csrf.disable())
 
                 // Stateless API
@@ -46,36 +46,13 @@ public class SecurityConfig {
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // ALLOW ALL REQUESTS (temporary - to fix 502 error)
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ ALLOW PREFLIGHT (must be first)
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // ✅ AUTH ENDPOINTS
-                        .requestMatchers("/auth/**").permitAll()
-
-                        // ✅ WEBSOCKET
-                        .requestMatchers("/ws/**").permitAll()
-
-                        // ✅ SESSION ENDPOINTS (ALL PUBLIC for now)
-                        .requestMatchers("/sessions/**").permitAll()
-                        
-                        // ✅ WHITEBOARD CONTENT (anonymous drawing allowed)
-                        .requestMatchers("/strokes/**").permitAll()
-                        .requestMatchers("/chat/**").permitAll()
-                        .requestMatchers("/presence/**").permitAll()
-                        
-                        // 🔒 USER ENDPOINTS (require authentication)
-                        .requestMatchers("/users/**").authenticated()
-                        
-                        // ✅ DEBUG ENDPOINTS (public access)
-                        .requestMatchers("/debug/**").permitAll()
-
-                        // ✅ Allow everything else (for debugging)
                         .anyRequest().permitAll()
-                )
+                );
 
-                // JWT filter
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        // Temporarily disable JWT filter to ensure app starts
+        // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
