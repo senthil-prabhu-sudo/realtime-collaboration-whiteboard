@@ -146,4 +146,12 @@ public class SessionController {
         sessionRepo.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    /* ---------------------------------------------
+       TEST ENDPOINT (DEBUGGING)
+    --------------------------------------------- */
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Backend is working!");
+    }
 }
