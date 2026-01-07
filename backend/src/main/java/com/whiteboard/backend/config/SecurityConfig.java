@@ -82,6 +82,9 @@ public class SecurityConfig {
                         // 🔒 OTHER AUTHENTICATED ENDPOINTS
                         .requestMatchers("/presence/**").permitAll() // Allow anonymous presence
                         .requestMatchers("/users/**").authenticated()
+                        
+                        // ✅ TEMPORARY DEBUG: Allow all for testing
+                        .requestMatchers("/**").permitAll()
 
                         // ❌ Everything else blocked
                         .anyRequest().denyAll()
