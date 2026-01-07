@@ -27,6 +27,30 @@ public class SessionController {
         this.messagingTemplate = messagingTemplate;
     }
 
+    /**
+     * Helper method to safely extract userId from authentication
+     * Returns null if user is not authenticated
+     */
+    private String getUserIdFromAuth(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        
+        Object principal = authentication.getPrincipal();
+        
+        // Anonymous users
+        if (principal instanceof String && "anonymousUser".equals(principal)) {
+            return null;
+        }
+        
+        // JWT authenticated users
+        if (principal instanceof String) {
+            return (String) principal;
+        }
+        
+        return null;
+    }
+
     /* ---------------------------------------------
        Get all sessions
     --------------------------------------------- */
@@ -36,7 +60,7 @@ public class SessionController {
     }
 
     /* ---------------------------------------------
-       Get session by ID
+       Get session by ID (PUBLIC - no auth required)
     --------------------------------------------- */
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable String id) {
@@ -49,13 +73,11 @@ public class SessionController {
        Create session
     --------------------------------------------- */
     @PostMapping
-    public ResponseEntity<CreateSessionResponse> create(@RequestBody CreateSessionRequest request, Authentication authentication) {
-        String creatorId = null;
-
-        if (authentication != null && authentication.getPrincipal() != null) {
-            // JWT filter sets principal as userId (String)
-            creatorId = (String) authentication.getPrincipal();
-        }
+    public ResponseEntity<CreateSessionResponse> create(
+            @RequestBody CreateSessionRequest request, 
+            Authentication authentication) {
+        
+        String creatorId = getUserIdFromAuth(authentication);
 
         // Allow anonymous creation only for public sessions
         if (creatorId == null && !request.isPublic()) {
@@ -85,18 +107,17 @@ public class SessionController {
        Toggle collaborative drawing
     --------------------------------------------- */
     @PostMapping("/{id}/toggle-collaborative-drawing")
-    public ResponseEntity<?> toggleCollaborativeDrawing(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<?> toggleCollaborativeDrawing(
+            @PathVariable String id, 
+            Authentication authentication) {
+        
         BoardSession session = sessionRepo.findById(id).orElse(null);
         if (session == null) {
             return ResponseEntity.notFound().build();
         }
 
         // Only creator can toggle
-        String userId = null;
-        if (authentication != null && authentication.getPrincipal() != null) {
-            // JWT filter sets principal as userId (String)
-            userId = (String) authentication.getPrincipal();
-        }
+        String userId = getUserIdFromAuth(authentication);
 
         if (userId == null || !userId.equals(session.getCreatorId())) {
             return ResponseEntity.status(403).build(); // Forbidden
@@ -121,17 +142,17 @@ public class SessionController {
        - Anyone can delete anonymously created sessions (creatorId == null)
     --------------------------------------------- */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<?> delete(
+            @PathVariable String id, 
+            Authentication authentication) {
+        
         BoardSession session = sessionRepo.findById(id).orElse(null);
         if (session == null) {
             return ResponseEntity.notFound().build();
         }
 
         // Get authenticated user ID (may be null for anonymous users)
-        String userId = null;
-        if (authentication != null && authentication.getPrincipal() != null) {
-            userId = (String) authentication.getPrincipal();
-        }
+        String userId = getUserIdFromAuth(authentication);
 
         // Allow deletion if:
         // 1. Session was created anonymously (null creator) - anyone can delete
@@ -140,7 +161,11 @@ public class SessionController {
                            (userId != null && userId.equals(session.getCreatorId()));
 
         if (!canDelete) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(403)
+                    .body(Map.of(
+                        "error", "Forbidden",
+                        "message", "You don't have permission to delete this session"
+                    ));
         }
 
         sessionRepo.deleteById(id);
