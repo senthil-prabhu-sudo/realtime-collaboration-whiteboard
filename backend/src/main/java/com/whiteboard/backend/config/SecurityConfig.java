@@ -64,19 +64,23 @@ public class SecurityConfig {
                         // ✅ WEBSOCKET
                         .requestMatchers("/ws/**").permitAll()
 
-                        // ✅ PUBLIC SESSION ACCESS
+                        // ✅ PUBLIC SESSION ENDPOINTS (viewing and listing)
                         .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sessions/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/test").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/{id}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/sessions").permitAll()
+                        
+                        // ✅ PUBLIC WHITEBOARD CONTENT (anonymous drawing allowed)
                         .requestMatchers("/strokes/**").permitAll()
                         .requestMatchers("/chat/**").permitAll()
 
-                        // 🔒 SESSION MODIFICATION (authenticated users only)
-                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/sessions/**").authenticated()
-
+                        // 🔒 SESSION MODIFICATION (requires authentication for owned sessions)
+                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").permitAll() // Controller handles auth logic
+                        .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").permitAll() // Controller handles auth logic
+                        
                         // 🔒 OTHER AUTHENTICATED ENDPOINTS
-                        .requestMatchers("/presence/**").authenticated()
+                        .requestMatchers("/presence/**").permitAll() // Allow anonymous presence
                         .requestMatchers("/users/**").authenticated()
 
                         // ❌ Everything else blocked
