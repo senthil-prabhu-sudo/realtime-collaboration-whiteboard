@@ -116,7 +116,7 @@ public class SessionController {
     }
 
     /* ---------------------------------------------
-       Delete session (creator only)
+       Delete session (creator only, or owner of anonymous sessions)
     --------------------------------------------- */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id, Authentication authentication) {
@@ -125,14 +125,21 @@ public class SessionController {
             return ResponseEntity.notFound().build();
         }
 
-        // Only creator can delete
+        // Get authenticated user ID
         String userId = null;
         if (authentication != null && authentication.getPrincipal() != null) {
             // JWT filter sets principal as userId (String)
             userId = (String) authentication.getPrincipal();
         }
 
-        if (userId == null || !userId.equals(session.getCreatorId())) {
+        // Allow deletion if:
+        // 1. User is authenticated AND is the creator, OR
+        // 2. User is authenticated AND session was created anonymously (null creator)
+        boolean canDelete = userId != null && (
+            userId.equals(session.getCreatorId()) || session.getCreatorId() == null
+        );
+
+        if (!canDelete) {
             return ResponseEntity.status(403).build(); // Forbidden
         }
 

@@ -60,6 +60,7 @@ export function Whiteboard({ onBackToLanding }: { onBackToLanding?: () => void }
   const [sessionName, setSessionName] = useState('');
   const [sessionCreatorId, setSessionCreatorId] = useState('');
   const [allowCollaborativeDrawing, setAllowCollaborativeDrawing] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(false);
 
   /* ---------------------------------------------
      Drawing state
@@ -452,6 +453,8 @@ export function Whiteboard({ onBackToLanding }: { onBackToLanding?: () => void }
   --------------------------------------------- */
   const selectSession = async (sessionId: string) => {
     try {
+      setSessionLoading(true);
+
       const s = await api<{
         id: string;
         name: string;
@@ -473,6 +476,14 @@ export function Whiteboard({ onBackToLanding }: { onBackToLanding?: () => void }
       window.history.replaceState({}, '', url.toString());
     } catch (error) {
       console.error('Failed to load session:', error);
+      // If session loading fails, redirect back to landing
+      setCurrentSessionId('');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('session');
+      window.history.replaceState({}, '', url.toString());
+      onBackToLanding?.();
+    } finally {
+      setSessionLoading(false);
     }
   };
 
@@ -672,7 +683,15 @@ export function Whiteboard({ onBackToLanding }: { onBackToLanding?: () => void }
         )}
 
         <main className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-          {currentSessionId ? (
+          {sessionLoading ? (
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Loading Session</h3>
+                <p className="text-gray-600">Connecting to collaborative whiteboard...</p>
+              </div>
+            </div>
+          ) : currentSessionId ? (
             <>
               <div className="p-4 border-b border-gray-200">
                 <DrawingToolbar
