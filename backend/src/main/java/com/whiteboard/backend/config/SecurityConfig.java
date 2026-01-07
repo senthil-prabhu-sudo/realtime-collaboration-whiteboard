@@ -64,12 +64,18 @@ public class SecurityConfig {
                         // ✅ WEBSOCKET
                         .requestMatchers("/ws/**").permitAll()
 
-                        // ✅ TEMPORARY: Allow all session operations for debugging
-                        .requestMatchers("/sessions/**").permitAll()
+                        // ✅ PUBLIC SESSION ACCESS
+                        .requestMatchers(HttpMethod.GET, "/sessions").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/sessions/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/sessions").permitAll()
                         .requestMatchers("/strokes/**").permitAll()
                         .requestMatchers("/chat/**").permitAll()
 
-                        // 🔒 AUTHENTICATED ENDPOINTS
+                        // 🔒 SESSION MODIFICATION (authenticated users only)
+                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/sessions/**").authenticated()
+
+                        // 🔒 OTHER AUTHENTICATED ENDPOINTS
                         .requestMatchers("/presence/**").authenticated()
                         .requestMatchers("/users/**").authenticated()
 
