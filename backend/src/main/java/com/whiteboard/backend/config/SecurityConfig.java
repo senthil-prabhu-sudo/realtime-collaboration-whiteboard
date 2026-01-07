@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/chat/**").permitAll()
 
                         // 🔒 SESSION MODIFICATION (requires authentication for owned sessions)
-                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").permitAll() // Controller handles auth logic
+                        .requestMatchers(HttpMethod.DELETE, "/sessions/**").authenticated() // Must be authenticated to delete
                         .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").permitAll() // Controller handles auth logic
 
                         // 🔒 AUTHENTICATED ENDPOINTS

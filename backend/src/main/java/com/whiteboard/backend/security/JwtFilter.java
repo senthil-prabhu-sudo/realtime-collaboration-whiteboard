@@ -38,7 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         boolean skip = path.startsWith("/auth/")
                 || path.startsWith("/ws/")
-                || path.startsWith("/sessions/")
+                || (path.startsWith("/sessions/") && !"DELETE".equalsIgnoreCase(method)) // Allow JWT for DELETE /sessions/**
                 || path.startsWith("/strokes/")
                 || path.startsWith("/chat/")
                 || path.startsWith("/debug/")
