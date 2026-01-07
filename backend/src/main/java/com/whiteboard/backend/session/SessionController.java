@@ -143,9 +143,9 @@ public class SessionController {
     --------------------------------------------- */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(
-            @PathVariable String id, 
+            @PathVariable String id,
             Authentication authentication) {
-        
+
         BoardSession session = sessionRepo.findById(id).orElse(null);
         if (session == null) {
             return ResponseEntity.notFound().build();
@@ -154,17 +154,28 @@ public class SessionController {
         // Get authenticated user ID (may be null for anonymous users)
         String userId = getUserIdFromAuth(authentication);
 
+        // DEBUG: Log deletion attempt
+        System.out.println("[DELETE SESSION] Session ID: " + id);
+        System.out.println("[DELETE SESSION] Session Creator: " + session.getCreatorId());
+        System.out.println("[DELETE SESSION] Current User: " + userId);
+        System.out.println("[DELETE SESSION] Is Anonymous Session: " + (session.getCreatorId() == null));
+        System.out.println("[DELETE SESSION] Is Creator Match: " + (userId != null && userId.equals(session.getCreatorId())));
+
         // Allow deletion if:
         // 1. Session was created anonymously (null creator) - anyone can delete
         // 2. User is authenticated AND is the creator
-        boolean canDelete = (session.getCreatorId() == null) || 
+        boolean canDelete = (session.getCreatorId() == null) ||
                            (userId != null && userId.equals(session.getCreatorId()));
+
+        System.out.println("[DELETE SESSION] Can Delete: " + canDelete);
 
         if (!canDelete) {
             return ResponseEntity.status(403)
                     .body(Map.of(
                         "error", "Forbidden",
-                        "message", "You don't have permission to delete this session"
+                        "message", "You don't have permission to delete this session",
+                        "sessionCreator", session.getCreatorId(),
+                        "currentUser", userId
                     ));
         }
 

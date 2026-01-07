@@ -73,8 +73,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/sessions/**").permitAll() // Controller handles auth logic
                         .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").permitAll() // Controller handles auth logic
 
-                        // 🔒 OTHER AUTHENTICATED ENDPOINTS
-                        .requestMatchers("/presence/**").permitAll() // Allow anonymous presence
+                        // 🔒 AUTHENTICATED ENDPOINTS
+                        .requestMatchers("/presence/**").authenticated() // Presence tracking requires authentication
                         .requestMatchers("/users/**").authenticated()
 
                         // ✅ DEBUG ENDPOINTS (public access)
