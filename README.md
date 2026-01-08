@@ -2,7 +2,7 @@
 
 A full-stack web application that enables real-time collaborative drawing and brainstorming sessions. Users can create whiteboard sessions, invite others to collaborate, and draw together in real-time with live presence indicators.
 
-![Realtime Whiteboard Demo](https://via.placeholder.com/800x400/4f46e5/ffffff?text=Realtime+Collaboration+Whiteboard)
+![Realtime Whiteboard Demo](https://ibb.co/hFfPFN8Z)
 
 ## ✨ Features
 
