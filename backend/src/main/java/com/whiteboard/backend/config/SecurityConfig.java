@@ -71,7 +71,7 @@ public class SecurityConfig {
 
                         // 🔒 SESSION MODIFICATION (requires authentication for owned sessions)
                         .requestMatchers(HttpMethod.DELETE, "/sessions/**").authenticated() // Must be authenticated to delete
-                        .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").permitAll() // Controller handles auth logic
+                        .requestMatchers(HttpMethod.POST, "/sessions/*/toggle-collaborative-drawing").authenticated() // Must be creator to toggle
 
                         // 🔒 AUTHENTICATED ENDPOINTS
                         .requestMatchers(HttpMethod.GET, "/presence/**").permitAll() // Public: view online users
