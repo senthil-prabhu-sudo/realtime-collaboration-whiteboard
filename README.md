@@ -45,14 +45,14 @@ A full-stack web application that enables real-time collaborative drawing and br
 
 ### Backend (Spring Boot + Java)
 - **Framework**: Spring Boot 3.x
-- **Database**: PostgreSQL with Flyway migrations
+- **Database**: MySQL with Flyway migrations
 - **Authentication**: JWT tokens with Spring Security
 - **Real-time**: WebSocket with STOMP protocol
 - **API**: RESTful endpoints with proper validation
 
 ### Infrastructure
-- **Deployment**: Railway (backend) + Vercel (frontend)
-- **Database**: PostgreSQL hosted on Railway
+- **Deployment**: Render (backend) + Vercel (frontend)
+- **Database**: MySQL hosted on Aiven
 - **WebSocket**: Spring WebSocket support
 - **CORS**: Configured for cross-origin requests
 
@@ -61,7 +61,7 @@ A full-stack web application that enables real-time collaborative drawing and br
 ### Prerequisites
 - Java 21+
 - Node.js 18+
-- PostgreSQL (for local development)
+- MySQL (for local development)
 - Git
 
 ### Backend Setup
@@ -80,7 +80,7 @@ A full-stack web application that enables real-time collaborative drawing and br
 3. **Configure environment variables**
    Create `backend/src/main/resources/application.properties`:
    ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/whiteboard_db
+   spring.datasource.url=jdbc:mysql://localhost:3306/whiteboard_db
    spring.datasource.username=your_username
    spring.datasource.password=your_password
    jwt.secret=your_jwt_secret_key
@@ -203,10 +203,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with React, Spring Boot, and PostgreSQL
+- Built with React, Spring Boot, and MySQL
 - Real-time features powered by WebSocket and STOMP
 - UI components styled with Tailwind CSS
-- Deployed on Railway and Vercel
+- Deployed on Render and Vercel
 
 ## 📞 Support
 
