@@ -18,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // API URL
-const API_URL = 'https://realtime-collaboration-whiteboard-production.up.railway.app';
+const API_URL = 'https://realtime-collaboration-whiteboard.onrender.com';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
