@@ -7,7 +7,7 @@
 ================================================== */
 
 // API URL
-const API_URL = 'https://realtime-collaboration-whiteboard-production.up.railway.app';
+const API_URL = 'https://realtime-collaboration-whiteboard.onrender.com';
 
 /* ---------------------------------------------
    Token provider (set by AuthContext)
