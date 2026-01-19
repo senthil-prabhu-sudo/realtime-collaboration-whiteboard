@@ -141,7 +141,6 @@ realtime-collaboration-whiteboard/
 │   │   └── utils/                    # Helper utilities
 │   ├── package.json                  # Node dependencies
 │   └── vite.config.ts                # Vite configuration
-├── railway.toml                      # Railway deployment config
 └── README.md                         # This file
 ```
 

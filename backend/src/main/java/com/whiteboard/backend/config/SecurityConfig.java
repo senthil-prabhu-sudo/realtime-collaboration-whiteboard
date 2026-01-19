@@ -97,7 +97,7 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(
                 "https://realtime-collaboration-whiteboard.vercel.app",
-                "https://realtime-collaboration-whiteboard-production.up.railway.app",
+                "https://realtime-collaboration-whiteboard.onrender.com",
                 "http://localhost:5173",
                 "http://localhost:3000"
         ));
